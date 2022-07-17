@@ -26,7 +26,7 @@ export default function ValidationAddDialog({
       <Dialog
         open={open}
         fullWidth
-        maxWidth="sm"
+        maxWidth="xs"
         onClose={() => handleClose()}
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
@@ -37,16 +37,6 @@ export default function ValidationAddDialog({
             <Stack>
               <Typography>Name</Typography>
               <TextField placeholder="Enter the name" variant="standard" />
-            </Stack>
-            <Stack>
-              <Typography>Fields</Typography>
-
-              <Stack direction="row">
-                <Typography color="rgba(0,0,0,.54)">email</Typography>
-              </Stack>
-            </Stack>
-            <Stack direction="row">
-              <Button variant="contained">Add field</Button>
             </Stack>
           </Stack>
         </DialogContent>
