@@ -23,8 +23,8 @@ import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Box from "@mui/material/Box";
 import { Checkbox, FormControlLabel, FormGroup } from "@mui/material";
-import { Add,  } from "@mui/icons-material";
-import ModeEditOutlineOutlinedIcon from '@mui/icons-material/ModeEditOutlineOutlined';
+import { Add } from "@mui/icons-material";
+import ModeEditOutlineOutlinedIcon from "@mui/icons-material/ModeEditOutlineOutlined";
 function a11yProps(index: number) {
   return {
     id: `vertical-tab-${index}`,
@@ -45,7 +45,23 @@ export default function ValidationDetailDialog({
     setValue(newValue);
   };
 
-  const [moreRules, setMoreRules] = React.useState<string[]>([]);
+  const [moreRules, setMoreRules] = React.useState<string[]>([
+    "hiragana",
+    "natakana",
+    "natakana",
+    "natakana",
+    "natakana",
+    "natakana",
+    "natakana",
+    "natakana",
+    "natakana",
+    "natakana",
+    "natakana",
+    "natakana",
+    "natakana",
+    "natakana",
+    "natakana",
+  ]);
 
   const handleClose = () => {
     if (typeof onClose === "function") {
@@ -153,34 +169,43 @@ export default function ValidationDetailDialog({
                 </Stack>
               </Stack>
               <Stack>
-                <Typography color="rgb(0 0 0 / 64%)" mb={2}>More rules</Typography>
-
-                <Stack direction="row">
-                  <FormControl fullWidth size="small">
-                    <InputLabel id="demo-select-small">My rule</InputLabel>
-                    <Select
-                      multiple
-                      variant="standard"
-                      labelId="demo-select-small"
-                      id="demo-select-small"
-                      value={moreRules}
-                      label="Age"
-                      renderValue={(selected) => (
-                        <Box
-                          sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}
+                <Typography color="rgb(0 0 0 / 64%)" mb={2}>
+                  More rules
+                </Typography>
+                <Stack spacing={2}>
+                  {moreRules.map((rule) => (
+                    <Stack direction="row" key={rule}>
+                      <FormControl fullWidth size="small">
+                        <InputLabel id="demo-select-small">My rule</InputLabel>
+                        <Select
+                          multiple
+                          variant="standard"
+                          labelId="demo-select-small"
+                          id="demo-select-small"
+                          value={moreRules}
+                          label="Age"
+                          renderValue={(selected) => (
+                            <Box
+                              sx={{
+                                display: "flex",
+                                flexWrap: "wrap",
+                                gap: 0.5,
+                              }}
+                            >
+                              {selected.map((value) => (
+                                <Chip key={value} label={value} />
+                              ))}
+                            </Box>
+                          )}
+                          onChange={handleChangeRule}
                         >
-                          {selected.map((value) => (
-                            <Chip key={value} label={value} />
-                          ))}
-                        </Box>
-                      )}
-                      onChange={handleChangeRule}
-                    >
-                      <MenuItem value="katakana">Katakana</MenuItem>
-                      <MenuItem value="hirakana">Hirakana</MenuItem>
-                      <MenuItem value="email">Email</MenuItem>
-                    </Select>
-                  </FormControl>
+                          <MenuItem value="katakana">Katakana</MenuItem>
+                          <MenuItem value="hirakana">Hirakana</MenuItem>
+                          <MenuItem value="email">Email</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </Stack>
+                  ))}
                 </Stack>
 
                 <Stack direction="row" spacing={1}>
