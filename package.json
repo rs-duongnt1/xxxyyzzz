@@ -31,5 +31,11 @@
   },
   "engines": {
     "node": ">=14.0.0 <16.0.0"
+  },
+  "bin": ".next/standalone/server.js",
+  "pkg": {
+    "assets": [
+      ".next/standalone/**/*"
+    ]
   }
 }

@@ -14,39 +14,22 @@ import {
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import ContentCopyOutlinedIcon from "@mui/icons-material/ContentCopyOutlined";
-import { useEffect } from "react";
-import { useAppSlice } from "resources/app/slice";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { selectValidationList } from "../selectors";
+import { useValidationSlice } from "../slice";
 
-function createData(id: string, name: string, fields: string[]) {
-  return { id, name, fields };
-}
-
-const rows = [
-  createData("SIArpPBXjZbZJmKfbjDb", "Register", [
-    "name",
-    "email",
-    "password",
-    "age",
-  ]),
-  createData("VoNyPrmOrstCE1UVHGFG", "Login", ["email", "password"]),
-  createData("rlY3A07fBmwIIkeD6BpV", "UpdateProfile", [
-    "email",
-    "avatar",
-    "fullname",
-  ]),
-];
-
-interface ValidationListProps {
-  onAdd: Function;
-  onEdit: Function;
-}
-export default function ValidationList({ onAdd, onEdit }: ValidationListProps) {
+export default function ValidationList() {
+  const validations = useSelector(selectValidationList);
+  const { actions: validationActions } = useValidationSlice();
+  const dispatch = useDispatch();
   return (
     <Stack>
       <Paper>
         <Stack direction="row" justifyContent="flex-end" p="10px">
-          <Button variant="contained" onClick={() => onAdd()}>
+          <Button
+            variant="contained"
+            onClick={() => dispatch(validationActions.toggleOpenDialogAdd())}
+          >
             Add new validation
           </Button>
         </Stack>
@@ -63,20 +46,29 @@ export default function ValidationList({ onAdd, onEdit }: ValidationListProps) {
             </TableRow>
           </TableHead>
           <TableBody>
-            {rows.map((row) => (
+            {validations.map((validation) => (
               <TableRow
-                key={row.name}
+                key={validation.name}
                 sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
               >
                 <TableCell component="th" scope="row">
-                  {row.id}
+                  {validation.id}
                 </TableCell>
-                <TableCell>{row.name}</TableCell>
-                <TableCell>{row.fields.join(",")}</TableCell>
+                <TableCell>{validation.name}</TableCell>
+                <TableCell>
+                  {validation.fields.map((field) => field.name).join(",")}
+                </TableCell>
                 <TableCell align="center">
                   <Stack spacing={1} direction="row" justifyContent="center">
                     <Tooltip title="Edit">
-                      <IconButton size="small" onClick={() => onEdit(row.id)}>
+                      <IconButton
+                        size="small"
+                        onClick={() =>
+                          dispatch(
+                            validationActions.setValidationSelected(validation)
+                          )
+                        }
+                      >
                         <EditIcon />
                       </IconButton>
                     </Tooltip>

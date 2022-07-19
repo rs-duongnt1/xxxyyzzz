@@ -2,14 +2,25 @@ import { RootState } from "store/type";
 import { createSelector } from "@reduxjs/toolkit";
 import { initialState } from "./slice";
 
-const selectCamera = (state: RootState) => state?.validation || initialState;
+const selectValidation = (state: RootState) =>
+  state?.validation || initialState;
 
-export const selectCameraStatus = createSelector(
-  [selectCamera],
-  (audioState) => audioState.cameraStatus
+export const selectValidationList = createSelector(
+  [selectValidation],
+  (validationState) => validationState.validations
 );
 
-export const selectVideoStream = createSelector(
-  [selectCamera],
-  (cameraState) => cameraState.videoStream
+export const selectValidationSelected = createSelector(
+  [selectValidation],
+  (validationState) => validationState.validationSelected
+);
+
+export const selectOpenDialogAdd = createSelector(
+  [selectValidation],
+  (validationState) => validationState.openDialogAdd
+);
+
+export const selectRules = createSelector(
+  [selectValidation],
+  (validationState) => validationState.rules
 );

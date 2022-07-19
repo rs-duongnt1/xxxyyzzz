@@ -23,90 +23,79 @@ import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Box from "@mui/material/Box";
 import { Checkbox, FormControlLabel, FormGroup } from "@mui/material";
-import { Add } from "@mui/icons-material";
-import ModeEditOutlineOutlinedIcon from "@mui/icons-material/ModeEditOutlineOutlined";
-import { nanoid } from "nanoid";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import MessageOutlinedIcon from "@mui/icons-material/MessageOutlined";
-function a11yProps(index: number) {
-  return {
-    id: `vertical-tab-${index}`,
-    "aria-controls": `vertical-tabpanel-${index}`,
-  };
-}
+import { useDispatch, useSelector } from "react-redux";
+import { selectRules, selectValidationSelected } from "../selectors";
+import { fieldTypes, useValidationSlice } from "../slice";
+import { useEffect } from "react";
+import { FieldRule } from "../types";
+import { nanoid } from "@reduxjs/toolkit";
 
-interface GroupRule {
-  id: string;
-  name: string;
-  rules: string[];
-  message: string | null;
-}
-interface ValidationDetailDialogProps {
-  open: boolean;
-  onClose?: Function;
-}
-export default function ValidationDetailDialog({
-  open,
-  onClose,
-}: ValidationDetailDialogProps) {
+export default function ValidationDetailDialog() {
   const [value, setValue] = React.useState(0);
+  const dispatch = useDispatch();
+  const rules = useSelector(selectRules);
+  const validationSelected = useSelector(selectValidationSelected);
+  const fieldSelected = validationSelected?.fields[0];
+  const { actions: validationActions } = useValidationSlice();
+
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
 
-  const [groupRules, setGroupRules] = React.useState<GroupRule[]>([
-    {
-      id: nanoid(),
-      name: "group rule 1",
-      rules: ["email", "katakana"],
-      message: null,
-    },
-    {
-      id: nanoid(),
-      name: "group rule 2",
-      rules: ["string", "katakana"],
-      message: null,
-    },
-  ]);
-
-  const rules = ["email", "string", "katakana", "hirakana"];
+  const handleChangeFieldType = (event: any) => {
+    dispatch(
+      validationActions.updateFieldType({
+        field: fieldSelected,
+        type: event.target.value,
+      })
+    );
+  };
 
   const handleClose = () => {
-    if (typeof onClose === "function") {
-      onClose();
-    }
+    dispatch(validationActions.setValidationSelected(null));
   };
 
-  const handleChangeGroupRule = (
+  const handleUpdateRule = (
     event: SelectChangeEvent<string[]>,
-    rule: GroupRule
+    rule: FieldRule
   ) => {
-    const {
-      target: { value },
-    } = event;
-    const _rules = [...groupRules];
-    const index = _rules.findIndex((_rule) => _rule.id === rule.id);
-    _rules[index].rules = value as any;
-    setGroupRules(_rules);
+    dispatch(
+      validationActions.updateRule({
+        field: fieldSelected,
+        rule: rule,
+        value: event.target.value as any,
+      })
+    );
   };
 
-  const addGroupRule = () => {
-    setGroupRules((rules) => [
-      ...rules,
-      { id: nanoid(), name: "Untitled", rules: [], message: null },
-    ]);
+  const addRule = () => {
+    dispatch(
+      validationActions.addRule({
+        field: fieldSelected,
+        rule: {
+          id: nanoid(),
+          title: "Untitled",
+          value: [],
+        },
+      })
+    );
   };
 
-  const removeGroupRule = (groupRule: GroupRule) => {
-    setGroupRules((groupRules) =>
-      groupRules.filter((_groupRule) => _groupRule.id !== groupRule.id)
+  const removeRule = (rule: FieldRule) => {
+    dispatch(
+      validationActions.removeRule({
+        field: fieldSelected,
+        rule: rule,
+      })
     );
   };
 
   return (
     <div>
       <Dialog
-        open={open}
+        open={validationSelected !== null}
         fullWidth
         maxWidth="md"
         onClose={() => handleClose()}
@@ -120,15 +109,20 @@ export default function ValidationDetailDialog({
               <Tabs
                 orientation="vertical"
                 variant="scrollable"
-                value={value}
+                value={validationSelected?.fields[0].id}
                 onChange={handleChange}
                 aria-label="Vertical tabs example"
                 sx={{ borderRight: 1, borderColor: "divider" }}
               >
-                <Tab label="username" {...a11yProps(0)} />
-                <Tab label="password" {...a11yProps(1)} />
-                <Tab label="email" {...a11yProps(2)} />
-                <Tab label="gender" {...a11yProps(3)} />
+                {validationSelected?.fields.map((field) => (
+                  <Tab
+                    label={field.name}
+                    key={field.id}
+                    value={field.id}
+                    id={field.id}
+                    aria-controls={field.id}
+                  />
+                ))}
               </Tabs>
             </Stack>
             <Stack px="30px" spacing={3} flex={1}>
@@ -148,13 +142,14 @@ export default function ValidationDetailDialog({
                     variant="standard"
                     labelId="demo-simple-select-label"
                     id="demo-simple-select"
-                    value={10}
-                    label="Age"
-                    // onChange={handleChange}
+                    value={fieldSelected?.type}
+                    onChange={handleChangeFieldType}
                   >
-                    <MenuItem value={10}>String</MenuItem>
-                    <MenuItem value={20}>Number</MenuItem>
-                    <MenuItem value={30}>Object</MenuItem>
+                    {fieldTypes.map((fieldType) => (
+                      <MenuItem value={fieldType} key={fieldType}>
+                        {fieldType.toLocaleLowerCase()}
+                      </MenuItem>
+                    ))}
                   </Select>
                 </FormControl>
               </Stack>
@@ -170,7 +165,9 @@ export default function ValidationDetailDialog({
                 >
                   <FormGroup>
                     <FormControlLabel
-                      control={<Checkbox defaultChecked />}
+                      control={
+                        <Checkbox defaultChecked={fieldSelected?.required} />
+                      }
                       label="Required"
                     />
                   </FormGroup>
@@ -180,34 +177,6 @@ export default function ValidationDetailDialog({
                     </IconButton>
                   </Stack>
                 </Stack>
-                <Stack>
-                  <Typography color="rgb(0 0 0 / 64%)">Length</Typography>
-                  <Stack direction="row" justifyContent="space-between">
-                    <Stack direction="row" spacing={1}>
-                      <TextField
-                        type="number"
-                        label="Max length"
-                        variant="standard"
-                        size="small"
-                        focused
-                        defaultValue={0}
-                      />
-                      <TextField
-                        type="number"
-                        label="Min length"
-                        variant="standard"
-                        size="small"
-                        focused
-                        defaultValue={10}
-                      />
-                    </Stack>
-                    <Stack direction="row">
-                      <IconButton color="error">
-                        <MessageOutlinedIcon />
-                      </IconButton>
-                    </Stack>
-                  </Stack>
-                </Stack>
               </Stack>
               <Stack>
                 <Typography variant="h6">Custom</Typography>
@@ -215,26 +184,33 @@ export default function ValidationDetailDialog({
               </Stack>
               <Stack spacing={2} px={2}>
                 <Stack spacing={2}>
-                  {groupRules.length === 0 && (
-                    <Typography fontStyle="italic" color="gray" fontSize="13px" textAlign="center">Empty List</Typography>
+                  {fieldSelected?.rules.length === 0 && (
+                    <Typography
+                      fontStyle="italic"
+                      color="gray"
+                      fontSize="13px"
+                      textAlign="center"
+                    >
+                      Empty List
+                    </Typography>
                   )}
-                  {groupRules.map((groupRule) => (
+                  {fieldSelected?.rules.map((rule) => (
                     <Stack
                       direction="row"
-                      key={groupRule.id}
+                      key={rule.id}
                       alignItems="flex-end"
                       spacing={1}
                     >
                       <FormControl fullWidth size="small">
                         <InputLabel id="demo-select-small">
-                          {groupRule.name}
+                          {rule.title}
                         </InputLabel>
                         <Select
                           multiple
                           variant="standard"
                           labelId="demo-select-small"
                           id="demo-select-small"
-                          value={groupRule.rules}
+                          value={rule.value}
                           renderValue={(selected) => (
                             <Box
                               sx={{
@@ -249,13 +225,13 @@ export default function ValidationDetailDialog({
                             </Box>
                           )}
                           onChange={(e: SelectChangeEvent<string[]>) =>
-                            handleChangeGroupRule(e, groupRule)
+                            handleUpdateRule(e, rule)
                           }
                         >
                           {rules.map((ruleName) => (
                             <MenuItem value={ruleName} key={ruleName}>
                               <Checkbox
-                                checked={groupRule.rules.indexOf(ruleName) > -1}
+                                checked={rule.value.indexOf(ruleName) > -1}
                               />
                               <ListItemText primary={ruleName} />
                             </MenuItem>
@@ -265,7 +241,7 @@ export default function ValidationDetailDialog({
                       <Stack direction="row">
                         <IconButton
                           color="error"
-                          onClick={() => removeGroupRule(groupRule)}
+                          onClick={() => removeRule(rule)}
                         >
                           <DeleteOutlineOutlinedIcon />
                         </IconButton>
@@ -278,11 +254,7 @@ export default function ValidationDetailDialog({
                 </Stack>
 
                 <Stack direction="row" spacing={1}>
-                  <Button
-                    variant="contained"
-                    onClick={addGroupRule}
-                    size="small"
-                  >
+                  <Button variant="contained" onClick={addRule} size="small">
                     Add
                   </Button>
                 </Stack>
