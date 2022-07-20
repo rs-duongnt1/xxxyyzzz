@@ -2,8 +2,10 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
-  output: 'standalone'
-  
-}
+  output: "standalone",
+  serverRuntimeConfig: {
+    PROJECT_ROOT: __dirname,
+  },
+};
 
-module.exports = nextConfig
+module.exports = nextConfig;

@@ -1,0 +1,1 @@
+{"projectId":"asdioasdoiasodiasdasd","validations":[{"name":"Register","type":"string","required":true,"groupRules":[{"rules":["isBoolean","isUnique"],"customMessage":"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"}]}]}

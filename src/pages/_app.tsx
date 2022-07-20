@@ -8,7 +8,6 @@ import { Backdrop, Box, Container, Stack, ThemeProvider } from "@mui/material";
 import { LAYOUT_SIDEBAR_WIDTH } from "resources/common/constants";
 import theme from "../theme";
 import CircularProgress from "@mui/material/CircularProgress";
-import { selectLoading } from "resources/app/selectors";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 

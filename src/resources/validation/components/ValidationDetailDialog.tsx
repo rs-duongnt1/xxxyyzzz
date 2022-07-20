@@ -18,6 +18,9 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import Autocomplete, {
+  AutocompleteChangeDetails,
+} from "@mui/material/Autocomplete";
 
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
@@ -31,6 +34,7 @@ import { fieldTypes, useValidationSlice } from "../slice";
 import { useEffect } from "react";
 import { FieldRule } from "../types";
 import { nanoid } from "@reduxjs/toolkit";
+import { useState } from "react";
 
 export default function ValidationDetailDialog() {
   const [value, setValue] = React.useState(0);
@@ -57,15 +61,12 @@ export default function ValidationDetailDialog() {
     dispatch(validationActions.setValidationSelected(null));
   };
 
-  const handleUpdateRule = (
-    event: SelectChangeEvent<string[]>,
-    rule: FieldRule
-  ) => {
+  const handleUpdateRule = (value: string[], rule: FieldRule) => {
     dispatch(
       validationActions.updateRule({
         field: fieldSelected,
         rule: rule,
-        value: event.target.value as any,
+        value: value,
       })
     );
   };
@@ -76,7 +77,7 @@ export default function ValidationDetailDialog() {
         field: fieldSelected,
         rule: {
           id: nanoid(),
-          title: "Untitled",
+          title: "Untitledsss",
           value: [],
         },
       })
@@ -129,10 +130,10 @@ export default function ValidationDetailDialog() {
               <Stack>
                 <Typography color="rgb(0 0 0 / 64%)">Field Name</Typography>
                 <TextField
+                  defaultValue="email"
                   variant="standard"
                   focused
                   color="success"
-                  defaultValue="email"
                 />
               </Stack>
               <Stack>
@@ -142,7 +143,7 @@ export default function ValidationDetailDialog() {
                     variant="standard"
                     labelId="demo-simple-select-label"
                     id="demo-simple-select"
-                    value={fieldSelected?.type}
+                    value={fieldSelected?.type || "string"}
                     onChange={handleChangeFieldType}
                   >
                     {fieldTypes.map((fieldType) => (
@@ -202,41 +203,28 @@ export default function ValidationDetailDialog() {
                       spacing={1}
                     >
                       <FormControl fullWidth size="small">
-                        <InputLabel id="demo-select-small">
-                          {rule.title}
-                        </InputLabel>
-                        <Select
+                        <Autocomplete
                           multiple
-                          variant="standard"
-                          labelId="demo-select-small"
-                          id="demo-select-small"
-                          value={rule.value}
-                          renderValue={(selected) => (
-                            <Box
-                              sx={{
-                                display: "flex",
-                                flexWrap: "wrap",
-                                gap: 0.5,
-                              }}
-                            >
-                              {selected.map((value: string) => (
-                                <Chip key={value} label={value} />
-                              ))}
-                            </Box>
-                          )}
-                          onChange={(e: SelectChangeEvent<string[]>) =>
-                            handleUpdateRule(e, rule)
-                          }
-                        >
-                          {rules.map((ruleName) => (
-                            <MenuItem value={ruleName} key={ruleName}>
+                          id="checkboxes-tags-demo"
+                          options={rules}
+                          disableCloseOnSelect
+                          onChange={(e, value) => {
+                            handleUpdateRule(value, rule);
+                          }}
+                          renderOption={(props, option, { selected }) => (
+                            <li {...props}>
                               <Checkbox
-                                checked={rule.value.indexOf(ruleName) > -1}
+                                style={{ marginRight: 8 }}
+                                checked={selected}
                               />
-                              <ListItemText primary={ruleName} />
-                            </MenuItem>
-                          ))}
-                        </Select>
+                              {option}
+                            </li>
+                          )}
+                          style={{ width: 500 }}
+                          renderInput={(params) => {
+                            return <TextField variant="standard" placeholder="+1" {...params} />;
+                          }}
+                        />
                       </FormControl>
                       <Stack direction="row">
                         <IconButton
