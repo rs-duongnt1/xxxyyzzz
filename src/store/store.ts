@@ -1,40 +1,23 @@
-import {
-  configureStore,
-  getDefaultMiddleware,
-  StoreEnhancer,
-} from "@reduxjs/toolkit";
-import { createInjectorsEnhancer } from "redux-injectors";
+import { validationApi } from "resources/validation/api";
+import { configureStore, StoreEnhancer } from "@reduxjs/toolkit";
 import createSagaMiddleware from "redux-saga";
 
-import { createReducer } from "./reducers";
+import { RTKQueryReducers } from "./rtk-query";
+import { validationReducer } from "resources/validation/slice";
+import { RTKQueryMiddlewares } from "./rtk-query";
+import { reducers } from "./reducers";
 
 export function configureAppStore() {
-  const reduxSagaMonitorOptions = {};
-  const sagaMiddleware = createSagaMiddleware(reduxSagaMonitorOptions);
-  const { run: runSaga } = sagaMiddleware;
-
-  // Create the store with saga middleware
-  const middlewares = [sagaMiddleware];
-
-  const enhancers = [
-    createInjectorsEnhancer({
-      createReducer: createReducer as any,
-      runSaga,
-    }),
-  ] as StoreEnhancer[];
-
   const store = configureStore({
-    reducer: createReducer(),
-    middleware: [
-      ...getDefaultMiddleware({
-        serializableCheck: false,
-      }),
-      ...middlewares,
-    ],
+    reducer: {
+      ...RTKQueryReducers,
+      ...reducers,
+    },
+    middleware: (getDefaultMiddleware) =>
+      getDefaultMiddleware().concat([...RTKQueryMiddlewares]),
     devTools:
       /* istanbul ignore next line */
       process.env.NODE_ENV !== "production",
-    enhancers,
   });
 
   return store;

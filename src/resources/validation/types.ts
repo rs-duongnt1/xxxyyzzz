@@ -1,7 +1,7 @@
-export interface FieldRule {
+export interface GroupRule {
   id: string;
-  title?: string;
-  value: string[];
+  rules: string[];
+  customMessage: string;
 }
 
 export type FieldType = "string" | "object" | "number";
@@ -9,7 +9,7 @@ export interface ValidationField {
   id: string;
   name: string;
   type: FieldType;
-  rules: FieldRule[];
+  groupRules: GroupRule[];
   required: boolean;
 }
 export interface Validation {

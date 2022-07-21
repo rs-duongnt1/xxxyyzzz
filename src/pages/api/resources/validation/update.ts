@@ -10,29 +10,26 @@ import CatchGlobal from "pages/server/utils/catch-global";
 export default CatchGlobal(
   async (req: NextApiRequest, res: NextApiResponse) => {
     if (req.method === "POST") {
-      const validation = {
-        projectId: "asdioasdoiasodiasdasd",
-        validations: [
-          {
-            name: "Register",
-            type: "string",
-            required: true,
-            groupRules: [
-              {
-                rules: ["isBoolean", "isUnique"],
-                customMessage: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-              },
-            ],
-          },
-        ],
-      };
-      let data = JSON.stringify(validation, null);
       const JSON_ROOT_PATH = path.join(
         getConfig().serverRuntimeConfig.PROJECT_ROOT,
         "json"
       );
-      fs.writeFileSync(path.join(JSON_ROOT_PATH, "validation.json"), data);
-      res.status(200).json("Update success!");
+
+      const currentValidations = JSON.parse(
+        fs.readFileSync(path.join(JSON_ROOT_PATH, "validation.json"), "utf-8")
+      );
+
+      const validationIndex = currentValidations.findIndex(
+        (validation: any) => validation.id === req.body.id
+      );
+
+      currentValidations[validationIndex] = req.body;
+
+      fs.writeFileSync(
+        path.join(JSON_ROOT_PATH, "validation.json"),
+        JSON.stringify(currentValidations, null, 2)
+      );
+      res.status(200).json(validationIndex);
     } else {
       throw new ErrorHandler("method not allowed", 400);
     }

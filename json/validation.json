@@ -1,1 +1,126 @@
-{"projectId":"asdioasdoiasodiasdasd","validations":[{"name":"Register","type":"string","required":true,"groupRules":[{"rules":["isBoolean","isUnique"],"customMessage":"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"}]}]}
+[
+  {
+    "id": "HJPoF5gU2mdWiMMZ3YBI2",
+    "name": "Register",
+    "fields": [
+      {
+        "id": "QrrlarMX5GkO6DKX7ScDU",
+        "name": "password",
+        "type": "object",
+        "required": true,
+        "groupRules": [
+          {
+            "id": "HJPoF5gU2mdWiMMZ3YBI2",
+            "rules": [
+              "isBoolean",
+              "isEmpty",
+              "hirakana",
+              "katakana",
+              "string",
+              "email",
+              "isUnique",
+              "isAscii",
+              "isAlphanumeric",
+              "isAlpha",
+              "isBtcAddress"
+            ],
+            "customMessage": ""
+          },
+          {
+            "id": "QrrlarMX5GkO6DKX7ScDU",
+            "rules": [
+              "isBoolean"
+            ],
+            "customMessage": ""
+          },
+          {
+            "id": "dJDHWmX5YWhyl9rGEYPJ-",
+            "rules": [
+              "isUnique"
+            ],
+            "customMessage": ""
+          },
+          {
+            "id": "u2fsIvqesBDxuIvN2Prxg",
+            "rules": [
+              "katakana"
+            ],
+            "customMessage": ""
+          },
+          {
+            "id": "cICcE76TiKRuGTbOL2UnS",
+            "rules": [
+              "email",
+              "string",
+              "katakana",
+              "hirakana",
+              "isEmpty",
+              "isUnique",
+              "isBoolean",
+              "isAlpha",
+              "isAlphanumeric",
+              "isAscii",
+              "isBtcAddress"
+            ],
+            "customMessage": ""
+          },
+          {
+            "id": "4mTcSslBEg6ye6HJ-MwLo",
+            "rules": [],
+            "customMessage": ""
+          },
+          {
+            "id": "tQQExdpxnq0_deHMCy_3p",
+            "rules": [],
+            "customMessage": ""
+          },
+          {
+            "id": "bZC7XBjYpwGWPTSfPVQdH",
+            "rules": [],
+            "customMessage": ""
+          },
+          {
+            "id": "QE42Yv6XpQ3turH02jAu-",
+            "rules": [],
+            "customMessage": ""
+          },
+          {
+            "id": "Z0h_uBzGYlsUd7K8hmbTd",
+            "rules": [],
+            "customMessage": ""
+          },
+          {
+            "id": "tjH7ZTAse9CaedllhB8tX",
+            "rules": [
+              "email",
+              "hirakana",
+              "isBoolean",
+              "isUnique"
+            ],
+            "customMessage": ""
+          },
+          {
+            "id": "V4legh82UD6dNZG19aY9m",
+            "rules": [],
+            "customMessage": ""
+          },
+          {
+            "id": "ThrlFJ5Ta5G3Xok8hmmbS",
+            "rules": [],
+            "customMessage": ""
+          },
+          {
+            "id": "BeNGTOMOP8Ps916sf-9_m",
+            "rules": [],
+            "customMessage": ""
+          },
+          {
+            "id": "tR3G3SnHBNfAQxhwuIXpx",
+            "rules": [],
+            "customMessage": ""
+          }
+        ]
+      }
+    ]
+  }
+]

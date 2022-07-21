@@ -6,6 +6,7 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
 import ListItemText from "@mui/material/ListItemText";
 import {
+  Box,
   Chip,
   Divider,
   FormControl,
@@ -18,23 +19,26 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import Autocomplete, {
-  AutocompleteChangeDetails,
-} from "@mui/material/Autocomplete";
+import Autocomplete from "@mui/material/Autocomplete";
 
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
-import Box from "@mui/material/Box";
 import { Checkbox, FormControlLabel, FormGroup } from "@mui/material";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import MessageOutlinedIcon from "@mui/icons-material/MessageOutlined";
 import { useDispatch, useSelector } from "react-redux";
-import { selectRules, selectValidationSelected } from "../selectors";
+import {
+  selectRules,
+  selectValidationList,
+  selectValidationSelected,
+} from "../selectors";
 import { fieldTypes, useValidationSlice } from "../slice";
-import { useEffect } from "react";
-import { FieldRule } from "../types";
+import { GroupRule, ValidationField } from "../types";
 import { nanoid } from "@reduxjs/toolkit";
-import { useState } from "react";
+import {
+  useFetchValidationListQuery,
+  useUpdateValidationsMutation,
+} from "../api";
 
 export default function ValidationDetailDialog() {
   const [value, setValue] = React.useState(0);
@@ -43,10 +47,13 @@ export default function ValidationDetailDialog() {
   const validationSelected = useSelector(selectValidationSelected);
   const fieldSelected = validationSelected?.fields[0];
   const { actions: validationActions } = useValidationSlice();
-
+  const { data } = useFetchValidationListQuery();
+  const [updateValidation] = useUpdateValidationsMutation();
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
+
+  const validations = useSelector(selectValidationList);
 
   const handleChangeFieldType = (event: any) => {
     dispatch(
@@ -61,7 +68,7 @@ export default function ValidationDetailDialog() {
     dispatch(validationActions.setValidationSelected(null));
   };
 
-  const handleUpdateRule = (value: string[], rule: FieldRule) => {
+  const handleUpdateRule = (value: string[], rule: GroupRule) => {
     dispatch(
       validationActions.updateRule({
         field: fieldSelected,
@@ -77,20 +84,51 @@ export default function ValidationDetailDialog() {
         field: fieldSelected,
         rule: {
           id: nanoid(),
-          title: "Untitledsss",
-          value: [],
+          rules: [],
+          customMessage: "",
         },
       })
     );
   };
 
-  const removeRule = (rule: FieldRule) => {
+  const removeRule = (rule: GroupRule) => {
     dispatch(
       validationActions.removeRule({
         field: fieldSelected,
         rule: rule,
       })
     );
+  };
+
+  const handleSave = () => {
+    if (validationSelected) {
+      updateValidation(validationSelected).then(() => {
+        dispatch(validationActions.updateValidations());
+        handleClose();
+      });
+    }
+  };
+
+  const updateFieldName = (fieldName: string) => {
+    if (fieldSelected) {
+      dispatch(
+        validationActions.updateFieldName({
+          field: fieldSelected,
+          fieldName: fieldName,
+        })
+      );
+    }
+  };
+
+  const updateFieldRequired = (checked: boolean) => {
+    if (fieldSelected) {
+      dispatch(
+        validationActions.updateFieldRequired({
+          field: fieldSelected,
+          required: checked,
+        })
+      );
+    }
   };
 
   return (
@@ -117,7 +155,18 @@ export default function ValidationDetailDialog() {
               >
                 {validationSelected?.fields.map((field) => (
                   <Tab
-                    label={field.name}
+                    label={
+                      <Stack spacing={1} direction="row">
+                        <Typography component="span" color="primary">
+                          {field.name}
+                        </Typography>
+                        {field.required && (
+                          <Typography component="span" color="error">
+                            *
+                          </Typography>
+                        )}
+                      </Stack>
+                    }
                     key={field.id}
                     value={field.id}
                     id={field.id}
@@ -126,7 +175,15 @@ export default function ValidationDetailDialog() {
                 ))}
               </Tabs>
             </Stack>
-            <Stack px="30px" spacing={3} flex={1}>
+            <Stack
+              px="30px"
+              spacing={3}
+              flex={1}
+              sx={{
+                maxHeight: "600px",
+                overflow: "auto scroll",
+              }}
+            >
               <Stack>
                 <Typography color="rgb(0 0 0 / 64%)">Field Name</Typography>
                 <TextField
@@ -134,6 +191,7 @@ export default function ValidationDetailDialog() {
                   variant="standard"
                   focused
                   color="success"
+                  onChange={(e) => updateFieldName(e.target.value as string)}
                 />
               </Stack>
               <Stack>
@@ -167,7 +225,12 @@ export default function ValidationDetailDialog() {
                   <FormGroup>
                     <FormControlLabel
                       control={
-                        <Checkbox defaultChecked={fieldSelected?.required} />
+                        <Checkbox
+                          defaultChecked={fieldSelected?.required}
+                          onChange={(e, checked) =>
+                            updateFieldRequired(checked)
+                          }
+                        />
                       }
                       label="Required"
                     />
@@ -180,12 +243,12 @@ export default function ValidationDetailDialog() {
                 </Stack>
               </Stack>
               <Stack>
-                <Typography variant="h6">Custom</Typography>
+                <Typography variant="h6">Group Rules</Typography>
                 <Divider />
               </Stack>
               <Stack spacing={2} px={2}>
                 <Stack spacing={2}>
-                  {fieldSelected?.rules.length === 0 && (
+                  {fieldSelected?.groupRules.length === 0 && (
                     <Typography
                       fontStyle="italic"
                       color="gray"
@@ -195,7 +258,7 @@ export default function ValidationDetailDialog() {
                       Empty List
                     </Typography>
                   )}
-                  {fieldSelected?.rules.map((rule) => (
+                  {fieldSelected?.groupRules.map((rule) => (
                     <Stack
                       direction="row"
                       key={rule.id}
@@ -207,6 +270,7 @@ export default function ValidationDetailDialog() {
                           multiple
                           id="checkboxes-tags-demo"
                           options={rules}
+                          defaultValue={rule.rules as any}
                           disableCloseOnSelect
                           onChange={(e, value) => {
                             handleUpdateRule(value, rule);
@@ -222,7 +286,13 @@ export default function ValidationDetailDialog() {
                           )}
                           style={{ width: 500 }}
                           renderInput={(params) => {
-                            return <TextField variant="standard" placeholder="+1" {...params} />;
+                            return (
+                              <TextField
+                                variant="standard"
+                                placeholder="+1"
+                                {...params}
+                              />
+                            );
                           }}
                         />
                       </FormControl>
@@ -252,7 +322,7 @@ export default function ValidationDetailDialog() {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => handleClose()}>Cancel</Button>
-          <Button onClick={() => handleClose()} variant="contained">
+          <Button onClick={() => handleSave()} variant="contained">
             Save
           </Button>
         </DialogActions>

@@ -1,13 +1,13 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { useInjectReducer } from "utils/redux-injectors";
 import {
-  FieldRule,
+  GroupRule,
   FieldType,
   Validation,
   ValidationField,
   ValidationState,
 } from "./types";
 import { nanoid } from "nanoid";
+import { validationApi } from "./api";
 
 const rules = [
   "email",
@@ -25,34 +25,31 @@ const rules = [
 
 export const fieldTypes: FieldType[] = ["number", "object", "string"];
 
-const validation: Validation = {
-  id: "bOkhjRh75MdoYkFE8KeuB",
-  name: "Register",
-  fields: [
-    {
-      id: "Rqyn3hifN6CminGAn7tnj",
-      name: "email",
-      type: "string",
-      rules: [],
-      required: true,
-    },
-  ],
-};
-
 export const initialState: ValidationState = {
   rules: rules,
   validationSelected: null,
-  validations: [validation],
+  validations: [],
   openDialogAdd: false,
 };
+
 const slice = createSlice({
   name: "validation",
   initialState,
   reducers: {
+    setValidations(state, action: PayloadAction<Validation[]>) {
+      state.validations = action.payload;
+    },
+    updateValidations(state) {
+      const validationIndex = state.validations.findIndex(
+        (validation) => validation.id === state.validationSelected?.id
+      );
+      if (validationIndex !== -1 && state.validationSelected) {
+        state.validations[validationIndex] = state.validationSelected;
+      }
+    },
     addValidation(state, action: PayloadAction<Validation>) {
       state.validations.push(action.payload);
     },
-    updateValidation(state, action: PayloadAction<Validation>) {},
     setValidationSelected(state, action: PayloadAction<Validation | null>) {
       state.validationSelected = action.payload;
     },
@@ -72,7 +69,31 @@ const slice = createSlice({
         state.validations[validationIndex].fields.push(action.payload.field);
       }
     },
+    updateFieldName(
+      state,
+      action: PayloadAction<{ field: ValidationField; fieldName: string }>
+    ) {
+      const fieldIndex = state.validationSelected?.fields.findIndex(
+        (field) => field.id === action.payload.field.id
+      );
+      if (fieldIndex !== -1 && state.validationSelected) {
+        state.validationSelected.fields[fieldIndex as number].name =
+          action.payload.fieldName;
+      }
+    },
 
+    updateFieldRequired(
+      state,
+      action: PayloadAction<{ field: ValidationField; required: boolean }>
+    ) {
+      const fieldIndex = state.validationSelected?.fields.findIndex(
+        (field) => field.id === action.payload.field.id
+      );
+      if (fieldIndex !== -1 && state.validationSelected) {
+        state.validationSelected.fields[fieldIndex as number].required =
+          action.payload.required;
+      }
+    },
     removeField() {},
     updateField() {},
     updateFieldType(
@@ -94,7 +115,7 @@ const slice = createSlice({
       state,
       action: PayloadAction<{
         field: ValidationField | undefined;
-        rule: FieldRule | undefined;
+        rule: GroupRule | undefined;
       }>
     ) {
       const fieldIndex = state.validationSelected?.fields.findIndex(
@@ -102,7 +123,7 @@ const slice = createSlice({
       );
 
       if (fieldIndex !== -1 && action.payload.rule) {
-        state.validationSelected?.fields[fieldIndex as number].rules.push(
+        state.validationSelected?.fields[fieldIndex as number].groupRules.push(
           action.payload.rule
         );
       }
@@ -111,7 +132,7 @@ const slice = createSlice({
       state,
       action: PayloadAction<{
         field: ValidationField | undefined;
-        rule: FieldRule | undefined;
+        rule: GroupRule | undefined;
       }>
     ) {
       const fieldIndex = state.validationSelected?.fields.findIndex(
@@ -121,10 +142,10 @@ const slice = createSlice({
       if (fieldIndex !== -1 && action.payload.rule) {
         const rules = state.validationSelected?.fields[
           fieldIndex as number
-        ].rules.filter((rule) => rule.id !== action.payload.rule?.id);
+        ].groupRules.filter((rule) => rule.id !== action.payload.rule?.id);
         if (state.validationSelected) {
-          state.validationSelected.fields[fieldIndex as number].rules =
-            rules as FieldRule[];
+          state.validationSelected.fields[fieldIndex as number].groupRules =
+            rules as GroupRule[];
         }
       }
     },
@@ -132,7 +153,7 @@ const slice = createSlice({
       state,
       action: PayloadAction<{
         field: ValidationField | undefined;
-        rule: FieldRule | undefined;
+        rule: GroupRule | undefined;
         value: string[];
       }>
     ) {
@@ -143,20 +164,29 @@ const slice = createSlice({
       if (fieldIndex !== -1 && state.validationSelected) {
         const ruleIndex = state.validationSelected.fields[
           fieldIndex as number
-        ].rules.findIndex((rule) => rule.id === action.payload.rule?.id);
+        ].groupRules.findIndex((rule) => rule.id === action.payload.rule?.id);
         if (ruleIndex !== -1 && action.payload.rule) {
-          state.validationSelected.fields[fieldIndex as number].rules[
+          state.validationSelected.fields[fieldIndex as number].groupRules[
             ruleIndex
-          ].value = action.payload.value;
+          ].rules = action.payload.value;
         }
       }
     },
+  },
+  extraReducers: (builder) => {
+    builder.addMatcher(
+      validationApi.endpoints.fetchValidationList.matchFulfilled,
+      (state, action) => {
+        state.validations = action.payload;
+      }
+    );
   },
 });
 
 export const { actions: audioActions } = slice;
 
 export const useValidationSlice = () => {
-  useInjectReducer({ key: slice.name, reducer: slice.reducer });
   return { actions: slice.actions };
 };
+
+export const validationReducer = slice.reducer;

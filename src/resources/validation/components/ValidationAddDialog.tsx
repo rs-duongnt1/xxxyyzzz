@@ -13,12 +13,14 @@ import { selectOpenDialogAdd } from "../selectors";
 import { useValidationSlice } from "../slice";
 
 export default function ValidationAddDialog() {
+
   const openDialogAdd = useSelector(selectOpenDialogAdd);
   const { actions: validationActions } = useValidationSlice();
   const dispatch = useDispatch();
   const handleClose = () => {
     dispatch(validationActions.toggleOpenDialogAdd());
   };
+
   return (
     <Dialog
       open={openDialogAdd}

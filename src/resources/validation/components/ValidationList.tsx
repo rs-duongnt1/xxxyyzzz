@@ -18,10 +18,14 @@ import { useDispatch, useSelector } from "react-redux";
 import { selectValidationList } from "../selectors";
 import { useValidationSlice } from "../slice";
 
+
 export default function ValidationList() {
   const validations = useSelector(selectValidationList);
   const { actions: validationActions } = useValidationSlice();
   const dispatch = useDispatch();
+  // const { data } = validationApi.endpoints.fetchValidationList.useQuery();
+  // console.log(data);
+
   return (
     <Stack>
       <Paper>

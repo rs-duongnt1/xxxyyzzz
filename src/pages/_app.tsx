@@ -8,8 +8,10 @@ import { Backdrop, Box, Container, Stack, ThemeProvider } from "@mui/material";
 import { LAYOUT_SIDEBAR_WIDTH } from "resources/common/constants";
 import theme from "../theme";
 import CircularProgress from "@mui/material/CircularProgress";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
+
+if (!process.browser) React.useLayoutEffect = React.useEffect;
 
 const store = configureAppStore();
 
